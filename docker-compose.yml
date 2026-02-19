@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo_data:/data/db
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      MONGO_URI: mongodb://root:root@mongo:27017/efd?authSource=admin
+      JWT_SECRET: super_secret
+      JWT_EXPIRES: 7d
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
