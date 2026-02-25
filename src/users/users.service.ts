@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { ConflictException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User } from "./schemas/user.schema";
@@ -14,11 +14,11 @@ export class UsersService {
 
     async create(createUserDto: CreateUserDto): Promise<User> {
         const existingUser = await this.userModel.findOne({ 
-            email: createUserDto.email 
+            name: createUserDto.name 
         });
 
         if(existingUser) {
-            throw new Error('Email already in use');
+            throw new ConflictException('Name already in use');
         }
         const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
         const newUser = new this.userModel({
@@ -30,8 +30,8 @@ export class UsersService {
         return newUser.save();
     }
 
-    async findByEmail(email: string): Promise<User| null> {
-        return this.userModel.findOne({ email }).exec();
+    async findByName(name: string): Promise<User| null> {
+        return this.userModel.findOne({ name }).exec();
     }
 
     async findById(id: string): Promise<User | null> {

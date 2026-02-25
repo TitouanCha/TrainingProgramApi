@@ -17,8 +17,7 @@ export class AuthService {
         const user = await this.userService.create(createUserDto);
 
         const payload = { 
-            sub: user._id, 
-            email: user.email,
+            sub: user._id,
             role: user.role
         };
         const access_token = this.jwtService.sign(payload);
@@ -27,7 +26,6 @@ export class AuthService {
             access_token,
             user: {
                 id: user._id,
-                email: user.email,
                 name: user.name,
                 role: user.role
             }
@@ -35,7 +33,7 @@ export class AuthService {
     }
 
     async login(loginDto: LoginDto){
-        const user = await this.userService.findByEmail(loginDto.email);
+        const user = await this.userService.findByName(loginDto.name);
 
         if(!user) {
             throw new UnauthorizedException('Invalid information');
@@ -51,7 +49,7 @@ export class AuthService {
 
         const payload = { 
             sub: user._id, 
-            email: user.email,
+            name: user.name,
             role: user.role
         };
         const access_token = this.jwtService.sign(payload);
@@ -60,7 +58,6 @@ export class AuthService {
             access_token,
             user: {
                 id: user._id,
-                email: user.email,
                 name: user.name,
                 role: user.role
             }
