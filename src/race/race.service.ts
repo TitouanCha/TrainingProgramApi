@@ -4,6 +4,7 @@ import { RaceSchema, Race} from "./schemas/race.shema";
 import { Model } from "mongoose";
 import { CreateRaceDto } from "./dto/create-race.dto";
 import { UpdateRaceDto } from "./dto/update-race.dto";
+import path from "path";
 
 
 @Injectable()
@@ -20,11 +21,35 @@ export class RaceService {
     }
 
     async getAllRaces(): Promise<Race[]> {
-        return this.raceModel.find().exec();
+        return this.raceModel
+        .find()
+        .populate({
+            path: 'idPrepa', 
+            select: 'name startDate',
+            populate: {
+                path: 'userList',
+                select: '_id name'
+            }
+        }).exec();
     }
 
-    async getRaceById(raceId: String): Promise<Race[]> {
-        return this.raceModel.find().exec();
+    async getRaceById(raceId: String): Promise<Race> {
+        const race = await this.raceModel
+            .findById(raceId)
+            .populate({
+                path: 'idPrepa', 
+                select: 'name startDate',
+                populate: {
+                    path: 'userList',
+                    select: '_id name'
+                }
+            })
+        .exec();
+        
+        if(!race){
+            throw new BadRequestException("Race not found")
+        }
+        return race
     }
 
     async updateRace(raceId: String, updatedRaceDto: UpdateRaceDto): Promise<Race> {
@@ -35,7 +60,7 @@ export class RaceService {
         ).exec();
 
         if(!updatedRace){
-            throw new NotFoundException(`Race with id ${raceId} not found`);
+            throw new NotFoundException(`Race not found`);
         }
 
         return updatedRace;

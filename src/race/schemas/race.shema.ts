@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 import { RaceType } from "../enums/race-type.enum";
 
 @Schema({ timestamps: true })
@@ -28,7 +28,10 @@ export class Race extends Document{
     @Prop({required: false})
     result: string;
 
-    @Prop({required: false})
+    @Prop({
+        type: MongooseSchema.Types.ObjectId, ref: 'Prepa',
+        required: false
+    })
     idPrepa: string;
 
 }
