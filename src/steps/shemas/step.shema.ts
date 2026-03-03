@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory} from "@nestjs/mongoose";
-import { Mongoose, Schema as MongooseSchema } from "mongoose";
+import { Mongoose, Schema as MongooseSchema, Types } from "mongoose";
 
 
 @Schema({ timestamps: true })
@@ -8,7 +8,7 @@ export class Step {
         type: MongooseSchema.Types.ObjectId, ref: 'Prepa',
         required: true 
     })
-    idPrepa: string;
+    idPrepa: Types.ObjectId;
 
     @Prop({ required: true })
     name: string;

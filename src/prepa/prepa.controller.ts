@@ -1,10 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import { PrepaService } from "./prepa.service";
 import { PrepaDto } from "./dto/prepa.dto";
 import { StepsService } from "src/steps/steps.service";
 import { StepDto } from "src/steps/dto/step.dto";
+import { UpdatePrepaDto } from "./dto/update-prepa.dto";
+import { User } from "src/users/schemas/user.schema";
 
 
 @Controller('prepa')
@@ -49,10 +51,24 @@ export class PrepaController {
         return this.prepaService.addRunnersListToPrepa(prepaId, runnerList, userId);
     }
 
+    @Patch(':id')
+    @UseGuards(JwtAuthGuard)
+    async updatePrepa(@Param('id') prepaId: string, @Body() updatePrepaDto: UpdatePrepaDto, @Req() req){
+        const userId = req.user.userId;
+        return this.prepaService.updatePrepa(prepaId, updatePrepaDto, userId);
+    }
+
     @Get(':id')
     @UseGuards(JwtAuthGuard)
     async getPrepaById(@Param('id') prepaId: string){
         return this.prepaService.getPrepaById(prepaId);
+    }
+
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard)
+    async deletePrepa(@Param('id') prepaId: string, @Req() req){
+        const userId = req.user.userId;
+        return this.prepaService.deletePrepa(prepaId, userId);
     }
 
     @Get()

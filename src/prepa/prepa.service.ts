@@ -5,6 +5,8 @@ import { isValidObjectId, Model } from "mongoose";
 import { PrepaDto } from "./dto/prepa.dto";
 import { Race } from "src/race/schemas/race.shema";
 import { User } from "src/users/schemas/user.schema";
+import { UpdatePrepaDto } from "./dto/update-prepa.dto";
+import { Step } from "src/steps/shemas/step.shema";
 
 
 @Injectable()
@@ -12,7 +14,8 @@ export class PrepaService {
     constructor( 
         @InjectModel(Prepa.name) private prepaModel: Model<Prepa>,
         @InjectModel(Race.name) private raceModel: Model<Race>,
-        @InjectModel(User.name) private userModel: Model<User>
+        @InjectModel(User.name) private userModel: Model<User>,
+        @InjectModel(Step.name) private stepModel: Model<Step>
     ) {}
 
     async createPrepa(prepaDto: PrepaDto, userId: string): Promise<Prepa> {
@@ -30,6 +33,7 @@ export class PrepaService {
 
         const prepa = await this.prepaModel
             .findById(savedPrepa._id)
+            .select('-__v -createdAt -updatedAt')
             .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
             .populate('userList', '_id name')
             .populate('createdBy', '_id name')
@@ -49,6 +53,7 @@ export class PrepaService {
 
     async getAllPrepa(): Promise<Prepa[]> {
         return this.prepaModel.find()
+            .select('-__v -createdAt -updatedAt')
             .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
             .populate('userList', '_id name')
             .populate('createdBy', '_id name')
@@ -58,6 +63,7 @@ export class PrepaService {
     async getPrepaById(prepaId: String): Promise<Prepa> {
         const prepa = await this.prepaModel
             .findById(prepaId)
+            .select('-__v -createdAt -updatedAt')
             .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
             .populate('userList', '_id name')
             .populate('createdBy', '_id name')
@@ -76,6 +82,7 @@ export class PrepaService {
 
         return this.prepaModel
             .find({ userList: userId })
+            .select('-__v -createdAt -updatedAt')
             .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
             .populate('userList', '_id name')
             .populate('createdBy', '_id name')
@@ -134,5 +141,47 @@ export class PrepaService {
         return updatedPrepa;
     }
 
+    async updatePrepa(prepaId: String, updatePrepaDto: UpdatePrepaDto, userId: string): Promise<Prepa> {
+        const prepa = await this.prepaModel.findById(prepaId).exec();
+        if(!prepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        if(prepa.createdBy != userId){
+            throw new BadRequestException(`Only the creator of the prepa can update it`);
+        }
 
+        const updatedPrepa = await this.prepaModel.findByIdAndUpdate(
+            prepaId,
+            { ...updatePrepaDto },
+            { new: true }
+        ).exec();
+
+        if(!updatedPrepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        return updatedPrepa;
+    }
+
+    async deletePrepa(prepaId: String, userId: string) {
+        const prepa = await this.prepaModel.findById(prepaId).exec();
+        if(!prepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        if(prepa.createdBy != userId){
+            throw new BadRequestException(`Only the creator of the prepa can delete it`);
+        }
+        const deletedPrepa = await this.prepaModel.findByIdAndDelete(prepaId).exec();
+        if(!deletedPrepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        await this.raceModel.findByIdAndUpdate(
+            deletedPrepa.idRace,
+            { $unset: { idPrepa: null } },
+            { new: true }
+        )
+        await this.stepModel.deleteMany({ idPrepa: prepaId }).exec();
+        
+        return {message: 'Prepa deleted successfully'};
+    }
+    
 }

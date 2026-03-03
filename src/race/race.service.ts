@@ -1,15 +1,21 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { RaceSchema, Race} from "./schemas/race.shema";
 import { Model } from "mongoose";
 import { CreateRaceDto } from "./dto/create-race.dto";
 import { UpdateRaceDto } from "./dto/update-race.dto";
 import path from "path";
+import { Prepa } from "src/prepa/shemas/prepa.shema";
+import { Step } from "src/steps/shemas/step.shema";
 
 
 @Injectable()
 export class RaceService {
-    constructor(@InjectModel(Race.name) private raceModel: Model<Race>) {}
+    constructor(
+        @InjectModel(Race.name) private raceModel: Model<Race>,
+        @InjectModel(Prepa.name) private prepaModel: Model<Prepa>,
+        @InjectModel(Step.name) private stepModel: Model<Step>
+    ) {}
 
     async createRace(createRaceDto: CreateRaceDto, userId: string): Promise<Race>{
         const existingRce = await this.raceModel.findOne({ name: createRaceDto.name }).exec();
@@ -58,17 +64,38 @@ export class RaceService {
         return race
     }
 
-    async updateRace(raceId: String, updatedRaceDto: UpdateRaceDto): Promise<Race> {
+    async updateRace(raceId: String, updatedRaceDto: UpdateRaceDto, userId: string): Promise<Race> {
+        const race = await this.raceModel.findById(raceId).exec();
+        if(race && race.createdBy.toString() !== userId){
+            throw new UnauthorizedException('Only the creator can update the race');
+        }
         const updatedRace = await this.raceModel.findByIdAndUpdate(
             raceId,
             { $set: updatedRaceDto },
             { new: true }
-        ).exec();
+        )
+        .exec();
 
         if(!updatedRace){
             throw new NotFoundException(`Race not found`);
         }
 
         return updatedRace;
+    }
+
+    async deleteRace(raceId: String, userId: string) {
+        const race = await this.raceModel.findById(raceId).exec();
+        if(race && race.createdBy.toString() !== userId){
+            throw new UnauthorizedException('Only the creator can update the race');
+        }
+        const deletedRace = await this.raceModel.findByIdAndDelete(raceId).exec();
+        if(!deletedRace){
+            throw new NotFoundException(`Race not found`);
+        }
+        const deletedPrepa = await this.prepaModel.findOneAndDelete({ idRace: raceId }).exec();
+        if(deletedPrepa){
+            await this.stepModel.deleteMany({ idPrepa: deletedPrepa._id }).exec();
+        }
+        return { message: 'Prepa deleted successfully' }
     }
 }

@@ -5,6 +5,7 @@ import { Model } from "mongoose";
 import { Prepa } from "src/prepa/shemas/prepa.shema";
 import { User } from "src/users/schemas/user.schema";
 import { StepDto } from "./dto/step.dto";
+import { UpdateStepDto } from "./dto/update-steps.dto";
 
 
 @Injectable()
@@ -20,7 +21,9 @@ export class StepsService {
         if(!existingPrepa){
             throw new BadRequestException(`Prepa not found`);
         }
-
+        if(existingPrepa.createdBy.toString() !== UserId){
+            throw new BadRequestException(`Only the creator of the prepa can add steps`);
+        }
         for(const stepDto of stepListDto){
             const steps = new this.stepModel({
                 ...stepDto,
@@ -55,6 +58,7 @@ export class StepsService {
 
     async getStepById(stepId: string): Promise<Step> {
         const step = await this.stepModel.findById(stepId)
+            .select('-__v -createdAt -updatedAt')
             .populate({
                 path: 'idPrepa',
                 select: 'name startDate',
@@ -84,5 +88,38 @@ export class StepsService {
             })
             .populate('createdBy', '_id name')
         .exec();
+    }
+
+    async updateStep(stepId: string, updateStapeDto: UpdateStepDto, userId: string): Promise<Step>{
+        const existingStep = await this.stepModel.findById(stepId).exec();
+        if(existingStep && existingStep.createdBy.toString() === userId){
+            throw new BadRequestException(`Only the creator can update the race`);
+        }
+        const updatedStep = await this.stepModel.findByIdAndUpdate(
+            stepId,
+            { $set: updateStapeDto },
+            { new: true }
+        )
+        .exec();
+        
+        if(!updatedStep){
+            throw new BadRequestException(`Step not found`);
+        }
+
+        return updatedStep
+    }
+
+    async deleteStep(stepId: string, userId: string) {
+        const existingStep = await this.stepModel.findById(stepId).exec();
+        if(existingStep && existingStep.createdBy.toString() === userId){
+            throw new BadRequestException(`Only the creator can delete the step`);
+        }
+        const deletedStep = await this.stepModel.findByIdAndDelete(stepId).exec();
+        
+        if(!deletedStep){
+            throw new BadRequestException(`Step not found`);
+        }
+
+        return { message: `Step successfully deleted` }
     }
 }
