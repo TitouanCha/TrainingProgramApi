@@ -15,7 +15,6 @@ export class AuthService {
 
     async register(createUserDto: CreateUserDto){
         const user = await this.userService.create(createUserDto);
-
         const payload = { 
             sub: user._id,
             role: user.role
@@ -34,11 +33,9 @@ export class AuthService {
 
     async login(loginDto: LoginDto){
         const user = await this.userService.findByName(loginDto.name);
-
         if(!user) {
             throw new UnauthorizedException('Invalid information');
         }
-
         const isPasswordValid = await bcrypt.compare(
             loginDto.password,
             user.password

@@ -34,5 +34,11 @@ export class Race extends Document{
     })
     idPrepa: string;
 
+    @Prop({
+        type: MongooseSchema.Types.ObjectId, ref: 'User',
+        required: true
+    })
+    createdBy: string;
+
 }
 export const RaceSchema = SchemaFactory.createForClass(Race);

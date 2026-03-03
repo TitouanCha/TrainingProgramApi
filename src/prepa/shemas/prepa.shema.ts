@@ -28,6 +28,12 @@ export class Prepa{
 
     @Prop({ required: false })
     description: string;
+
+    @Prop({
+        type: MongooseSchema.Types.ObjectId, ref: 'User',
+        required: true
+    })
+    createdBy: string;
 }
 
 export const PrepaSchema = SchemaFactory.createForClass(Prepa);

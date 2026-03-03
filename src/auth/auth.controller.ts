@@ -4,6 +4,7 @@ import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { Body, Post } from "@nestjs/common";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { GetUser } from "./decorators/get-user.decorator";
+import { LoginDto } from "./dto/login.dto";
 
 
 
@@ -12,13 +13,13 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post()
-    async register(@Body() CreateUserDto: CreateUserDto) {
-        return this.authService.register(CreateUserDto);
+    async register(@Body() createUserDto: CreateUserDto) {
+        return this.authService.register(createUserDto);
     }
 
     @Post('login')
-    async login(@Body() CreateUserDto: CreateUserDto) {
-        return this.authService.login(CreateUserDto);
+    async login(@Body() loginDto: LoginDto) {
+        return this.authService.login(loginDto);
     }
 
 }

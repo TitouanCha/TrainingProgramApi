@@ -15,20 +15,25 @@ export class PrepaService {
         @InjectModel(User.name) private userModel: Model<User>
     ) {}
 
-    async createPrepa(prepaDto: PrepaDto): Promise<Prepa> {
+    async createPrepa(prepaDto: PrepaDto, userId: string): Promise<Prepa> {
         const raceId = prepaDto.idRace;
         const race = await this.raceModel.findById(raceId).exec();
         if(!race){
             throw new BadRequestException(`Race not found`);
         }
-        const newPrepa = new this.prepaModel(prepaDto);
+        const newPrepa = new this.prepaModel(
+            {
+                ...prepaDto,
+                createdBy: userId
+            });
         const savedPrepa = await newPrepa.save();
 
         const prepa = await this.prepaModel
             .findById(savedPrepa._id)
-            .populate('idRace')
-            .populate('userList')
-            .exec();
+            .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
+            .populate('userList', '_id name')
+            .populate('createdBy', '_id name')
+        .exec();
 
         if (!prepa) {
             throw new BadRequestException(`Prepa not found`);
@@ -43,15 +48,20 @@ export class PrepaService {
     }
 
     async getAllPrepa(): Promise<Prepa[]> {
-        return this.prepaModel.find().populate('idRace').populate('userList').exec();
+        return this.prepaModel.find()
+            .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
+            .populate('userList', '_id name')
+            .populate('createdBy', '_id name')
+        .exec();
     }
 
     async getPrepaById(prepaId: String): Promise<Prepa> {
         const prepa = await this.prepaModel
             .findById(prepaId)
-            .populate('idRace')
-            .populate('userList')
-            .exec();
+            .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
+            .populate('userList', '_id name')
+            .populate('createdBy', '_id name')
+        .exec();
         if(!prepa){
             throw new BadRequestException(`Prepa not found`);
         }
@@ -66,29 +76,48 @@ export class PrepaService {
 
         return this.prepaModel
             .find({ userList: userId })
-            .populate('idRace')
-            .populate('userList', '_id name') 
-            .exec();
+            .populate('idRace', '-__v -createdAt -updatedAt -idPrepa')
+            .populate('userList', '_id name')
+            .populate('createdBy', '_id name')
+        .exec();
     }
-    
-    async addRunnersToPrepa(prepaId: String, userIdList: string[]): Promise<Prepa> {
+
+    async addRunnersListToPrepa(prepaId: String, userIdList: string[], logedUserId: string): Promise<Prepa> {
         if(userIdList.length === 0){
             throw new BadRequestException(`User list is empty`);
         }
         if(isValidObjectId(prepaId) === false){
             throw new BadRequestException(`Invalid prepa id`);
         }
-        
         const prepa = await this.prepaModel.findById(prepaId).exec();
         if(!prepa){
             throw new BadRequestException(`Prepa not found`);
         }
+        if(prepa.createdBy != logedUserId){
+            throw new BadRequestException(`Only the creator of the prepa can add runners`);
+        }
+        return this.addRunnersToPrepa(prepaId, userIdList, prepa.userList);
+    }
+
+    async addLogedUserToPrepa(prepaId: String, logedUserId: string): Promise<Prepa> {
+        if(isValidObjectId(prepaId) === false){
+            throw new BadRequestException(`Invalid prepa id`);
+        }
+        const prepa = await this.prepaModel.findById(prepaId).exec();
+        if(!prepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        return this.addRunnersToPrepa(prepaId, [logedUserId], prepa.userList);
+    }
+    
+    async addRunnersToPrepa(prepaId: String, userIdList: string[], prepaUserList: string[]): Promise<Prepa> {
+
         for(const i in userIdList){
             const user = await this.userModel.findById(userIdList[i]).exec()
             if(!user){
                 throw new BadRequestException(`One of the users dosn't exist`);
             }
-            if (prepa.userList.map(id => id.toString()).includes(userIdList[i])) {
+            if (prepaUserList.map(id => id.toString()).includes(userIdList[i])) {
                 throw new BadRequestException('User is already in prepa');
             }
         }

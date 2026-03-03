@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import { RaceService } from "./race.service";
@@ -18,7 +18,8 @@ export class RaceController {
 
     @Post()
     @UseGuards(JwtAuthGuard)
-    async createRace(@Body() createRaceDto: CreateRaceDto) {
-        return this.racesService.createRace(createRaceDto);
+    async createRace(@Body() createRaceDto: CreateRaceDto, @Req() req) {
+        const userId = req.user.userId;
+        return this.racesService.createRace(createRaceDto, userId);
     }
 }

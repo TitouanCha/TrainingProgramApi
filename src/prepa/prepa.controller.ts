@@ -21,13 +21,14 @@ export class PrepaController {
     @UseGuards(JwtAuthGuard)
     async addLogedUserToPrepa(@Param('id') prepaId: string,  @Req() req){
         const userId = req.user.userId;
-        return this.prepaService.addRunnersToPrepa(prepaId, [userId]);
+        return this.prepaService.addLogedUserToPrepa(prepaId, userId);
     }
 
     @Patch(':id/runners')
     @UseGuards(JwtAuthGuard)
-    async addRunnerToPrepa(@Param('id') prepaId: string, @Body() runnerList: string[]) {
-        return this.prepaService.addRunnersToPrepa(prepaId, runnerList);
+    async addRunnerToPrepa(@Param('id') prepaId: string, @Body() runnerList: string[], @Req() req){
+        const userId = req.user.userId;
+        return this.prepaService.addRunnersListToPrepa(prepaId, runnerList, userId);
     }
 
     @Get(':id')
@@ -44,8 +45,9 @@ export class PrepaController {
 
     @Post()
     @UseGuards(JwtAuthGuard)
-    async createPrepa(@Body() prepaDto: PrepaDto) {
-        return this.prepaService.createPrepa(prepaDto);
+    async createPrepa(@Body() prepaDto: PrepaDto, @Req() req) {
+        const userId = req.user.userId;
+        return this.prepaService.createPrepa(prepaDto, userId);
     }
     
 }

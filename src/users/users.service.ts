@@ -16,7 +16,6 @@ export class UsersService {
         const existingUser = await this.userModel.findOne({ 
             name: createUserDto.name 
         });
-
         if(existingUser) {
             throw new ConflictException('Name already in use');
         }
@@ -31,7 +30,7 @@ export class UsersService {
     }
 
     async findByName(name: string): Promise<User| null> {
-        return this.userModel.findOne({ name }).exec();
+        return this.userModel.findOne({ name }).select('+password').exec();
     }
 
     async findById(id: string): Promise<User | null> {

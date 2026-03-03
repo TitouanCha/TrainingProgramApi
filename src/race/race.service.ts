@@ -11,26 +11,31 @@ import path from "path";
 export class RaceService {
     constructor(@InjectModel(Race.name) private raceModel: Model<Race>) {}
 
-    async createRace(CreateRaceDto: CreateRaceDto): Promise<Race>{
-        const existingRce = await this.raceModel.findOne({ name: CreateRaceDto.name }).exec();
+    async createRace(createRaceDto: CreateRaceDto, userId: string): Promise<Race>{
+        const existingRce = await this.raceModel.findOne({ name: createRaceDto.name }).exec();
         if(existingRce){
-            throw new BadRequestException(`Race with name ${CreateRaceDto.name} already exists`);
+            throw new BadRequestException(`Race with name ${createRaceDto.name} already exists`);
         }
-        const newRace = new this.raceModel(CreateRaceDto);
+        const newRace = new this.raceModel({
+            ...createRaceDto,
+            createdBy: userId
+        });
         return newRace.save();
     }
 
     async getAllRaces(): Promise<Race[]> {
         return this.raceModel
-        .find()
-        .populate({
-            path: 'idPrepa', 
-            select: 'name startDate',
-            populate: {
-                path: 'userList',
-                select: '_id name'
-            }
-        }).exec();
+            .find()
+            .populate({
+                path: 'idPrepa', 
+                select: 'name startDate',
+                populate: {
+                    path: 'userList',
+                    select: '_id name'
+                }
+            })
+            .populate('createdBy', '_id name')
+        .exec();
     }
 
     async getRaceById(raceId: String): Promise<Race> {
@@ -44,6 +49,7 @@ export class RaceService {
                     select: '_id name'
                 }
             })
+            .populate('createdBy', '_id name')
         .exec();
         
         if(!race){
