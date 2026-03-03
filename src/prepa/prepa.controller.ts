@@ -44,6 +44,13 @@ export class PrepaController {
         return this.prepaService.addLogedUserToPrepa(prepaId, userId);
     }
 
+    @Delete(':id/runners/me')
+    @UseGuards(JwtAuthGuard)
+    async removeLogedUserFromPrepa(@Param('id') prepaId: string,  @Req() req){
+        const userId = req.user.userId;
+        return this.prepaService.removeLogedUserFromPrepa(prepaId, userId);
+    }
+
     @Patch(':id/runners')
     @UseGuards(JwtAuthGuard)
     async addRunnerToPrepa(@Param('id') prepaId: string, @Body() runnerList: string[], @Req() req){

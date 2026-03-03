@@ -12,9 +12,6 @@ export class PrepaDto {
     @IsNotEmpty()
     startDate: Date
 
-    //@IsNotEmpty()
-    //endDate: Date
-
     @IsNotEmpty()
     @IsMongoId()
     idRace: string

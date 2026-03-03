@@ -24,6 +24,13 @@ export class PrepaService {
         if(!race){
             throw new BadRequestException(`Race not found`);
         }
+        if(race.idPrepa){
+            throw new BadRequestException(`Race already has a prepa`);
+        }
+        if(race.createdBy != userId){
+            throw new BadRequestException('Only the race’s creator can create a prep for it.');
+        }
+
         const newPrepa = new this.prepaModel(
             {
                 ...prepaDto,
@@ -43,7 +50,7 @@ export class PrepaService {
             throw new BadRequestException(`Prepa not found`);
         }
 
-        const updatedRace = await this.raceModel.findByIdAndUpdate(
+        await this.raceModel.findByIdAndUpdate(
             raceId,
             { idPrepa : prepa._id },
             { new: true }
@@ -89,7 +96,7 @@ export class PrepaService {
         .exec();
     }
 
-    async addRunnersListToPrepa(prepaId: String, userIdList: string[], logedUserId: string): Promise<Prepa> {
+    async addRunnersListToPrepa(prepaId: String, userIdList: string[], logedUserId: string) {
         if(userIdList.length === 0){
             throw new BadRequestException(`User list is empty`);
         }
@@ -106,7 +113,7 @@ export class PrepaService {
         return this.addRunnersToPrepa(prepaId, userIdList, prepa.userList);
     }
 
-    async addLogedUserToPrepa(prepaId: String, logedUserId: string): Promise<Prepa> {
+    async addLogedUserToPrepa(prepaId: String, logedUserId: string){
         if(isValidObjectId(prepaId) === false){
             throw new BadRequestException(`Invalid prepa id`);
         }
@@ -116,8 +123,28 @@ export class PrepaService {
         }
         return this.addRunnersToPrepa(prepaId, [logedUserId], prepa.userList);
     }
+
+    async removeLogedUserFromPrepa(prepaId: String, logedUserId: string) {
+        if(isValidObjectId(prepaId) === false){
+            throw new BadRequestException(`Invalid prepa id`);
+        }
+        const prepa = await this.prepaModel.findById(prepaId).exec();
+        if(!prepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        const updatedPrepa = await this.prepaModel.findByIdAndUpdate(
+            prepaId,
+            { $pull: { userList: logedUserId } },
+            { new: true }
+        ).exec();
+
+        if(!updatedPrepa){
+            throw new BadRequestException(`Prepa not found`);
+        }
+        return { message: 'User removed from prepa successfully' };
+    }
     
-    async addRunnersToPrepa(prepaId: String, userIdList: string[], prepaUserList: string[]): Promise<Prepa> {
+    async addRunnersToPrepa(prepaId: String, userIdList: string[], prepaUserList: string[]) {
 
         for(const i in userIdList){
             const user = await this.userModel.findById(userIdList[i]).exec()
@@ -138,7 +165,7 @@ export class PrepaService {
         if(!updatedPrepa){
             throw new BadRequestException(`Prepa not found`);
         }
-        return updatedPrepa;
+        return { message: "User added to prepa successfully" };
     }
 
     async updatePrepa(prepaId: String, updatePrepaDto: UpdatePrepaDto, userId: string): Promise<Prepa> {

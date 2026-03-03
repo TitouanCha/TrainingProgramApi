@@ -11,8 +11,8 @@ export class Prepa{
     @Prop({ required: true})
     startDate: Date;
 
-    //@Prop({ required: true})
-    //endDate: Date;
+    @Prop({ required: false})
+    endDate: Date;
 
     @Prop({
         type: MongooseSchema.Types.ObjectId, ref: 'Race',
