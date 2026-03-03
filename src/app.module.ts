@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { RaceModule } from './race/race.module';
 import { PrepaModule } from './prepa/prepa.module';
+import { StepsModule } from './steps/steps.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { PrepaModule } from './prepa/prepa.module';
     AuthModule,
     UsersModule,
     RaceModule,
-    PrepaModule
+    PrepaModule,
+    StepsModule
   ],
   controllers: [AppController],
   providers: [AppService],

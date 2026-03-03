@@ -20,7 +20,6 @@ export class PrepaDto {
     idRace: string
 
     @IsArray()
-    @ArrayNotEmpty()
     @IsMongoId({ each: true })
     userList: string[]
 
