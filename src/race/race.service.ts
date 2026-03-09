@@ -7,6 +7,7 @@ import { UpdateRaceDto } from "./dto/update-race.dto";
 import path from "path";
 import { Prepa } from "src/prepa/shemas/prepa.shema";
 import { Step } from "src/steps/shemas/step.shema";
+import { frDateTransform } from "src/utils/utils";
 
 
 @Injectable()
@@ -22,8 +23,10 @@ export class RaceService {
         if(existingRce){
             throw new BadRequestException(`Race with name ${createRaceDto.name} already exists`);
         }
+        const date: Date = frDateTransform(createRaceDto.date)
         const newRace = new this.raceModel({
             ...createRaceDto,
+            date: date,
             createdBy: userId
         });
         return newRace.save();
@@ -69,12 +72,24 @@ export class RaceService {
         if(race && race.createdBy.toString() !== userId){
             throw new UnauthorizedException('Only the creator can update the race');
         }
-        const updatedRace = await this.raceModel.findByIdAndUpdate(
-            raceId,
-            { $set: updatedRaceDto },
-            { new: true }
-        )
-        .exec();
+        var updatedRace
+        if (updatedRaceDto.date) {
+            const date = frDateTransform(updatedRaceDto.date);
+            updatedRace = await this.raceModel.findByIdAndUpdate(
+                raceId,
+                {
+                    $set: updatedRaceDto,
+                    date: date
+                },
+                { new: true }
+            ).exec()
+        }else{
+            updatedRace = await this.raceModel.findByIdAndUpdate(
+                raceId,
+                { $set: updatedRaceDto },
+                { new: true }
+            ).exec()
+        }
 
         if(!updatedRace){
             throw new NotFoundException(`Race not found`);

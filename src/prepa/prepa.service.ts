@@ -7,6 +7,7 @@ import { Race } from "src/race/schemas/race.shema";
 import { User } from "src/users/schemas/user.schema";
 import { UpdatePrepaDto } from "./dto/update-prepa.dto";
 import { Step } from "src/steps/shemas/step.shema";
+import { frDateTransform } from "src/utils/utils";
 
 
 @Injectable()
@@ -15,11 +16,10 @@ export class PrepaService {
         @InjectModel(Prepa.name) private prepaModel: Model<Prepa>,
         @InjectModel(Race.name) private raceModel: Model<Race>,
         @InjectModel(User.name) private userModel: Model<User>,
-        @InjectModel(Step.name) private stepModel: Model<Step>
+        @InjectModel(Step.name) private stepModel: Model<Step>,
     ) {}
 
-    async createPrepa(prepaDto: PrepaDto, userId: string): Promise<Prepa> {
-        const raceId = prepaDto.idRace;
+    async createPrepa(prepaDto: PrepaDto, raceId: string, userId: string): Promise<Prepa> {
         const race = await this.raceModel.findById(raceId).exec();
         if(!race){
             throw new BadRequestException(`Race not found`);
@@ -30,11 +30,17 @@ export class PrepaService {
         if(race.createdBy != userId){
             throw new BadRequestException('Only the race’s creator can create a prep for it.');
         }
-
+        const startDate: Date = frDateTransform(prepaDto.startDate)
+        if(startDate > race.date){
+            throw new BadRequestException('Prepa can\'t start after the race')
+        }
         const newPrepa = new this.prepaModel(
             {
                 ...prepaDto,
-                createdBy: userId
+                idRace: raceId,
+                startDate: startDate,
+                createdBy: userId,
+                endDate: race.date
             });
         const savedPrepa = await newPrepa.save();
 

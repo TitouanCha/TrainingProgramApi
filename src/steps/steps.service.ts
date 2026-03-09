@@ -6,6 +6,9 @@ import { Prepa } from "src/prepa/shemas/prepa.shema";
 import { User } from "src/users/schemas/user.schema";
 import { StepDto } from "./dto/step.dto";
 import { UpdateStepDto } from "./dto/update-steps.dto";
+import { Training } from "src/training/shemas/training.shema";
+import { Console } from "console";
+import { frDateTransform } from "src/utils/utils";
 
 
 @Injectable()
@@ -13,7 +16,7 @@ export class StepsService {
     constructor(
         @InjectModel(Step.name) private stepModel: Model<Step>,
         @InjectModel(Prepa.name) private prepaModel: Model<Prepa>,
-        @InjectModel(User.name) private userModel: Model<User>
+        @InjectModel(Training.name) private trainingModel: Model<Training>,
     ) {}
 
     async createSteps(stepListDto: StepDto[], UserId: string, prepaId: string): Promise<Step[]>{
@@ -24,13 +27,30 @@ export class StepsService {
         if(existingPrepa.createdBy.toString() !== UserId){
             throw new BadRequestException(`Only the creator of the prepa can add steps`);
         }
+        const trainings = await this.trainingModel.find({ idPrepa: prepaId }).exec();
+        var startDate: Date
+        var endDate: Date
         for(const stepDto of stepListDto){
-            const steps = new this.stepModel({
+            startDate = frDateTransform(stepDto.startDate)
+            endDate = frDateTransform(stepDto.endDate)
+            const step = new this.stepModel({
                 ...stepDto,
+                startDate: startDate,
+                endDate: endDate,
                 createdBy: UserId,
                 idPrepa: prepaId
             });
-            const savedSteps = await steps.save();
+            const savedStep = await step.save();
+
+            for(const training of trainings){
+                if(startDate <= training.startDate && endDate >= training.endDate) {
+                    await this.trainingModel.findByIdAndUpdate(
+                        training._id,
+                        { idStep: savedStep._id },
+                        { new: true }
+                    ).exec();
+                }
+            }
         }
 
         return this.stepModel.find({ idPrepa: prepaId })

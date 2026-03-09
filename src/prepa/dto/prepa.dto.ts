@@ -10,11 +10,8 @@ export class PrepaDto {
     name: string
 
     @IsNotEmpty()
-    startDate: Date
-
-    @IsNotEmpty()
-    @IsMongoId()
-    idRace: string
+    @IsString()
+    startDate: string
 
     @IsArray()
     @IsMongoId({ each: true })

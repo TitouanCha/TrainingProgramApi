@@ -7,6 +7,7 @@ import { StepsService } from "src/steps/steps.service";
 import { StepDto } from "src/steps/dto/step.dto";
 import { UpdatePrepaDto } from "./dto/update-prepa.dto";
 import { User } from "src/users/schemas/user.schema";
+import { TrainingService } from "src/training/training.service";
 
 
 @Controller('prepa')
@@ -14,7 +15,8 @@ import { User } from "src/users/schemas/user.schema";
 export class PrepaController {
     constructor(
         private prepaService: PrepaService,
-        private stepsService: StepsService
+        private stepsService: StepsService,
+        private trainingService: TrainingService
     ){}
 
     @Get('me')
@@ -22,6 +24,19 @@ export class PrepaController {
     async getPrepaByUsuerId(@Req() req){
         const userId = req.user.userId;
         return this.prepaService.getPrepaByUserId(userId);
+    }
+
+    @Post(':id/training')
+    @UseGuards(JwtAuthGuard)
+    async createTraining(@Param('id') prepaId: string, @Body() trainingDto: any, @Req() req) {
+        const userId = req.user.userId;
+        return this.trainingService.createTraining(trainingDto, prepaId, userId);
+    }
+
+    @Get(':id/training')
+    @UseGuards(JwtAuthGuard)
+    async getTrainingsByPrepaId(@Param('id') prepaId: string){
+        return this.trainingService.getTrainingsByPrepaId(prepaId);
     }
 
     @Post(':id/steps')
@@ -84,11 +99,4 @@ export class PrepaController {
         return this.prepaService.getAllPrepa();
     }
 
-    @Post()
-    @UseGuards(JwtAuthGuard)
-    async createPrepa(@Body() prepaDto: PrepaDto, @Req() req) {
-        const userId = req.user.userId;
-        return this.prepaService.createPrepa(prepaDto, userId);
-    }
-    
 }

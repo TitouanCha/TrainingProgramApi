@@ -16,8 +16,10 @@ export class StepDto {
     description: string;
 
     @IsNotEmpty()
-    startDate: Date;
+    @IsString()
+    startDate: string;
 
     @IsNotEmpty()
-    endDate: Date;
+    @IsString()
+    endDate: string;
 }

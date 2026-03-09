@@ -1,7 +1,7 @@
 import { IsDate, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 import { RaceType } from "../enums/race-type.enum";
 import { Double } from "mongoose";
-
+import { frDateTransform } from "src/utils/utils";
 
 export class CreateRaceDto {
     @IsString()
@@ -9,7 +9,8 @@ export class CreateRaceDto {
     name: string;
 
     @IsNotEmpty()
-    date: Date;
+    @IsString()
+    date: string;
 
     @IsEnum(RaceType)
     @IsNotEmpty()

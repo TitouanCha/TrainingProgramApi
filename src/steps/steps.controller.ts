@@ -3,12 +3,22 @@ import { JwtAuthGuard } from "src/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "src/auth/guards/roles.guard";
 import { StepsService } from "./steps.service";
 import { UpdateStepDto } from "./dto/update-steps.dto";
+import { TrainingService } from "src/training/training.service";
 
 
 @Controller('steps')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class StepsController {
-    constructor( private stepsService: StepsService ){}
+    constructor( 
+        private stepsService: StepsService,
+        private trainingService: TrainingService
+    ){}
+
+    @Get(':id/training')
+    @UseGuards(JwtAuthGuard)
+    async getTrainingsByStepId(@Param('id') prepaId: string){
+        return this.trainingService.getTrainingsByStepId(prepaId);
+    }
 
     @Get(':id')
     @UseGuards(JwtAuthGuard)

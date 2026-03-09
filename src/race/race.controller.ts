@@ -4,12 +4,25 @@ import { RolesGuard } from "src/auth/guards/roles.guard";
 import { RaceService } from "./race.service";
 import { CreateRaceDto } from "./dto/create-race.dto";
 import { UpdateRaceDto } from "./dto/update-race.dto";
+import { PrepaDto } from "src/prepa/dto/prepa.dto";
+import { PrepaService } from "src/prepa/prepa.service";
 
 
 @Controller('race')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class RaceController {
-    constructor(private racesService: RaceService) {}
+    constructor(
+        private racesService: RaceService,
+        private prepaService: PrepaService,
+    ) {}
+
+    @Post(':id/prepa')
+    @UseGuards(JwtAuthGuard)
+    async createPrepaForRace(@Param('id') raceId: string, @Body() createPrepaDto: PrepaDto, @Req() req){
+        const userId = req.user.userId
+        return this.prepaService.createPrepa(createPrepaDto, raceId, userId)
+    }
+
 
     @Get()
     @UseGuards(JwtAuthGuard)

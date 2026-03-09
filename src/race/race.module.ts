@@ -5,6 +5,9 @@ import { RaceController } from "./race.controller";
 import { RaceService } from "./race.service";
 import { Prepa, PrepaSchema } from "src/prepa/shemas/prepa.shema";
 import { Step, StepSchema } from "src/steps/shemas/step.shema";
+import { PrepaService } from "src/prepa/prepa.service";
+import { User, UserSchema } from "src/users/schemas/user.schema";
+import { PrepaModule } from "src/prepa/prepa.module";
 
 
 @Module({
@@ -13,7 +16,9 @@ import { Step, StepSchema } from "src/steps/shemas/step.shema";
             { name: Race.name, schema: RaceSchema},
             { name: Prepa.name, schema: PrepaSchema},
             { name: Step.name, schema: StepSchema}
-        ])
+            //{ name: User.name, schema: UserSchema},
+        ]),
+        PrepaModule
     ],
     controllers: [RaceController],
     providers: [RaceService],

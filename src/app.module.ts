@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { RaceModule } from './race/race.module';
 import { PrepaModule } from './prepa/prepa.module';
 import { StepsModule } from './steps/steps.module';
+import { TrainingModule } from './training/training.module';
 
 @Module({
   imports: [
@@ -19,7 +20,8 @@ import { StepsModule } from './steps/steps.module';
     UsersModule,
     RaceModule,
     PrepaModule,
-    StepsModule
+    StepsModule,
+    TrainingModule
   ],
   controllers: [AppController],
   providers: [AppService],
