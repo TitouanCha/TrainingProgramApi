@@ -45,6 +45,7 @@ export class TrainingService {
             ...trainingDto,
             startDate: startDate,
             endDate: endDate,
+            createdBy: userId
         });
         return training.save();
     }
