@@ -25,6 +25,7 @@ export class AppService {
         endDate: { $gt: startDate}
       })
       .select('-__v -updatedAt')
+      .populate('idRace', '_id name date')
       .populate('userList', '_id name')
       .populate('createdBy', '_id name')
     .exec()
@@ -34,6 +35,7 @@ export class AppService {
         endDate: { $gt: startDate}
       })
       .select('-__v -updatedAt')
+      .populate('idPrepa', '_id name startDate')
       .populate('createdBy', '_id name')
     .exec()
 
@@ -46,8 +48,7 @@ export class AppService {
     .exec()
 
     const races = await this.raceModel.find({
-        startDate: { $lte: endDate},
-        endDate: { $gt: startDate}
+        date: { $gte: startDate, $lte: endDate }
       })
       .select('-__v -updatedAt')
       .populate('createdBy', '_id name')
