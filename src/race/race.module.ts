@@ -15,8 +15,8 @@ import { PrepaModule } from "src/prepa/prepa.module";
         MongooseModule.forFeature([
             { name: Race.name, schema: RaceSchema},
             { name: Prepa.name, schema: PrepaSchema},
-            { name: Step.name, schema: StepSchema}
-            //{ name: User.name, schema: UserSchema},
+            { name: Step.name, schema: StepSchema},
+            { name: User.name, schema: UserSchema},
         ]),
         PrepaModule
     ],

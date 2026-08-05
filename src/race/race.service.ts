@@ -8,6 +8,7 @@ import path from "path";
 import { Prepa } from "src/prepa/shemas/prepa.shema";
 import { Step } from "src/steps/shemas/step.shema";
 import { frDateTransform } from "src/utils/utils";
+import { User } from "src/users/schemas/user.schema";
 
 
 @Injectable()
@@ -15,7 +16,8 @@ export class RaceService {
     constructor(
         @InjectModel(Race.name) private raceModel: Model<Race>,
         @InjectModel(Prepa.name) private prepaModel: Model<Prepa>,
-        @InjectModel(Step.name) private stepModel: Model<Step>
+        @InjectModel(Step.name) private stepModel: Model<Step>,
+        @InjectModel(User.name) private userModel: Model<User>
     ) {}
 
     async createRace(createRaceDto: CreateRaceDto, userId: string): Promise<Race>{
@@ -43,6 +45,26 @@ export class RaceService {
                     select: '_id name'
                 }
             })
+            .populate('createdBy', '_id name')
+        .exec();
+    }
+
+    async getRacesByUserId(userId: string): Promise<Race[]> {
+        const existingUser = await this.userModel.findById(userId).exec();
+        if(!existingUser){
+            throw new BadRequestException(`User not found`);
+        }
+        return this.raceModel
+            .find({ userList: userId })
+            .populate({
+                path: 'idPrepa', 
+                select: 'name startDate',
+                populate: {
+                    path: 'userList',
+                    select: '_id name'
+                }
+            })
+            .populate('userList', '_id name')
             .populate('createdBy', '_id name')
         .exec();
     }
@@ -113,4 +135,6 @@ export class RaceService {
         }
         return { message: 'Prepa deleted successfully' }
     }
+
+
 }

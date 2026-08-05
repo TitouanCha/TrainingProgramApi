@@ -5,6 +5,8 @@ import { User } from "./schemas/user.schema";
 import { CreateUserDto } from "./dto/create-user.dto";
 import * as bcrypt from 'bcrypt';
 import { UserRole } from "./enums/user-role.enum";
+import { Prepa } from "src/prepa/shemas/prepa.shema";
+import { PrepaModule } from '../prepa/prepa.module';
 
 
 
@@ -48,4 +50,5 @@ export class UsersService {
     async findAll(): Promise<User[]> {
         return this.userModel.find().select('-password').exec();
     }
+
 }

@@ -19,10 +19,14 @@ export class AppService {
   async getUserTraining(interval: string[], userId: string){
     const startDate = frDateTransform(interval[0])
     const endDate = frDateTransform(interval[1])
+    if(startDate == endDate) {
+      endDate.setDate(endDate.getDate() + 1)
+      startDate.setDate(startDate.getDate() - 1)
+    }
 
     const prepas = await this.prepaModel.find({
         startDate: { $lte: endDate},
-        endDate: { $gt: startDate}
+        endDate: { $gte: startDate}
       })
       .select('-__v -updatedAt')
       .populate('idRace', '_id name date')
@@ -32,16 +36,16 @@ export class AppService {
 
     const steps = await this.stepModel.find({
         startDate: { $lte: endDate},
-        endDate: { $gt: startDate}
+        endDate: { $gte: startDate}
       })
       .select('-__v -updatedAt')
       .populate('idPrepa', '_id name startDate')
       .populate('createdBy', '_id name')
     .exec()
-
+    
     const trainings = await this.trainingModel.find({
         startDate: { $lte: endDate},
-        endDate: { $gt: startDate}
+        endDate: { $gte: startDate}
       })
       .select('-__v -updatedAt')
       .populate('createdBy', '_id name')

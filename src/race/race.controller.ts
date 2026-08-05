@@ -23,11 +23,23 @@ export class RaceController {
         return this.prepaService.createPrepa(createPrepaDto, raceId, userId)
     }
 
+    @Get('/me')
+    @UseGuards(JwtAuthGuard)
+    async getRacesByUserId(@Req() req){
+        const userId = req.user.userId
+        return this.racesService.getRacesByUserId(userId);
+    }
 
     @Get()
     @UseGuards(JwtAuthGuard)
     async getAllRaces() {
         return this.racesService.getAllRaces();
+    }
+
+    @Get(':id')
+    @UseGuards(JwtAuthGuard)
+    async getRaceById(@Param('id') raceId: string) {
+        return this.racesService.getRaceById(raceId);
     }
 
     @Post()
