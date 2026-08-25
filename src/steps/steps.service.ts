@@ -61,6 +61,7 @@ export class StepsService {
     async getStepsByPrepaId(prepaId: string): Promise<any> {
         const existingPrepa = await this.prepaModel.findById(prepaId)
             .select('-__v -updatedAt -userList')
+            .sort({ startDate : -1 })
             .populate('createdBy', '_id name')
             .populate('idRace', '-__v -createdAt -updatedAt')
         .exec()

@@ -37,14 +37,6 @@ export class RaceService {
     async getAllRaces(): Promise<Race[]> {
         return this.raceModel
             .find()
-            .populate({
-                path: 'idPrepa', 
-                select: 'name startDate',
-                populate: {
-                    path: 'userList',
-                    select: '_id name'
-                }
-            })
             .populate('createdBy', '_id name')
         .exec();
     }
@@ -56,14 +48,6 @@ export class RaceService {
         }
         return this.raceModel
             .find({ userList: userId })
-            .populate({
-                path: 'idPrepa', 
-                select: 'name startDate',
-                populate: {
-                    path: 'userList',
-                    select: '_id name'
-                }
-            })
             .populate('userList', '_id name')
             .populate('createdBy', '_id name')
         .exec();
@@ -72,14 +56,6 @@ export class RaceService {
     async getRaceById(raceId: String): Promise<Race> {
         const race = await this.raceModel
             .findById(raceId)
-            .populate({
-                path: 'idPrepa', 
-                select: 'name startDate',
-                populate: {
-                    path: 'userList',
-                    select: '_id name'
-                }
-            })
             .populate('createdBy', '_id name')
         .exec();
         
@@ -129,9 +105,11 @@ export class RaceService {
         if(!deletedRace){
             throw new NotFoundException(`Race not found`);
         }
-        const deletedPrepa = await this.prepaModel.findOneAndDelete({ idRace: raceId }).exec();
-        if(deletedPrepa){
-            await this.stepModel.deleteMany({ idPrepa: deletedPrepa._id }).exec();
+        const prepas = await this.prepaModel.find({ idRace: raceId }).exec();
+        if(prepas.length > 0){
+            const prepaIds = prepas.map(prepa => prepa._id);
+            await this.stepModel.deleteMany({ idPrepa: { $in: prepaIds } }).exec();
+            await this.prepaModel.deleteMany({ idRace: raceId }).exec();
         }
         return { message: 'Prepa deleted successfully' }
     }

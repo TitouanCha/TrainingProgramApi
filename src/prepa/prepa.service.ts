@@ -24,12 +24,6 @@ export class PrepaService {
         if(!race){
             throw new BadRequestException(`Race not found`);
         }
-        if(race.idPrepa){
-            throw new BadRequestException(`Race already has a prepa`);
-        }
-        if(race.createdBy != userId){
-            throw new BadRequestException('Only the race’s creator can create a prep for it.');
-        }
         const startDate: Date = frDateTransform(prepaDto.startDate)
         if(startDate > race.date){
             throw new BadRequestException('Prepa can\'t start after the race')
@@ -58,7 +52,7 @@ export class PrepaService {
 
         await this.raceModel.findByIdAndUpdate(
             raceId,
-            { idPrepa : prepa._id },
+            { $push: {idPrepa : savedPrepa._id} },
             { new: true }
         )
         return prepa;

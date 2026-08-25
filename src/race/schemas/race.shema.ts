@@ -29,10 +29,11 @@ export class Race extends Document{
     result: string;
 
     @Prop({
-        type: MongooseSchema.Types.ObjectId, ref: 'Prepa',
-        required: false
+        type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Prepa'}],
+        required: false,
+        default: []
     })
-    idPrepa: string;
+    idPrepa: string[];
 
     @Prop({
         type: MongooseSchema.Types.ObjectId, ref: 'User',
