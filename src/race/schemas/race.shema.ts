@@ -23,7 +23,7 @@ export class Race extends Document{
     goal: string;
 
     @Prop({required: false})
-    descrition: string;
+    description: string;
 
     @Prop({required: false})
     result: string;
