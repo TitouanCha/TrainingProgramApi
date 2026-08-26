@@ -25,6 +25,7 @@ export class AppService {
     }
 
     const prepas = await this.prepaModel.find({
+        userList: userId,
         startDate: { $lte: endDate},
         endDate: { $gte: startDate}
       })
@@ -33,8 +34,10 @@ export class AppService {
       .populate('userList', '_id name')
       .populate('createdBy', '_id name')
     .exec()
-
+    
+    const prepaIds = prepas.map(prepa => prepa._id)
     const steps = await this.stepModel.find({
+        idPrepa: { $in: prepaIds },
         startDate: { $lte: endDate},
         endDate: { $gte: startDate}
       })
@@ -44,14 +47,17 @@ export class AppService {
     .exec()
     
     const trainings = await this.trainingModel.find({
+        idPrepa: { $in: prepaIds },
         startDate: { $lte: endDate},
         endDate: { $gte: startDate}
       })
       .select('-__v -updatedAt')
       .populate('createdBy', '_id name')
     .exec()
-
+    
+    const raceIds = prepas.map(prepa => prepa.idRace)
     const races = await this.raceModel.find({
+        _id: { $in: raceIds },
         date: { $gte: startDate, $lte: endDate }
       })
       .select('-__v -updatedAt')
