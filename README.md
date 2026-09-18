@@ -1,29 +1,16 @@
-# Application de préparation aux courses
+# TrainingProgramApi
 
-Application mobile développée avec Flutter permettant de rechercher une course et de suivre un programme d'entraînement adapté afin de préparer son objectif.
+API REST dédiée à une application de création et de suivi de programmes d'entraînement pour la préparation de courses.
 
-Le projet repose sur une API REST dédiée qui centralise les utilisateurs, les courses, les préparations et les entraînements.
+Cette API constitue le backend du projet. Elle centralise la gestion des utilisateurs, des courses et des programmes d'entraînement et fournit les différentes ressources nécessaires à l'application mobile Flutter.
 
-## Fonctionnement
+## Fonctionnement du projet
 
-Le parcours principal de l'utilisateur est le suivant :
+L'application permet à un utilisateur de rechercher une course et de consulter les préparations déjà disponibles pour celle-ci.
 
-1. Rechercher une course.
-2. Consulter les préparations existantes pour cette course.
-3. Sélectionner la préparation qui correspond le mieux à son objectif.
-4. Si aucune préparation ne convient, créer sa propre préparation.
-5. Suivre les différentes étapes et séances d'entraînement de la préparation.
-6. Visualiser son programme depuis un planning mensuel.
+Il peut ensuite sélectionner une préparation correspondant à son objectif ou créer sa propre préparation.
 
-## Organisation des données
-
-Une course peut être associée à plusieurs préparations.
-
-Chaque préparation est composée de plusieurs étapes qui permettent de structurer la progression vers l'objectif.
-
-Ces étapes regroupent les différentes séances d'entraînement à réaliser.
-
-Structure simplifiée :
+Une préparation est organisée en plusieurs étapes contenant les différentes séances d'entraînement à réaliser jusqu'à la course.
 
 ```text
 Course
@@ -32,44 +19,101 @@ Course
         └── Entraînements
 ```
 
+L'API assure la gestion et la persistance de ces différentes ressources.
+
 ## Fonctionnalités
 
-* Recherche de courses
-* Consultation des préparations disponibles
-* Création de préparations personnalisées
-* Organisation d'une préparation en plusieurs étapes
-* Création et gestion des entraînements
-* Planning mensuel des séances
-* Suivi du programme d'entraînement
-* Gestion des comptes utilisateurs
-* Communication avec une API REST dédiée
+L'API permet notamment :
 
-## Technologies
+* la création et la gestion des comptes utilisateurs ;
+* l'authentification des utilisateurs ;
+* la sécurisation des routes avec JWT ;
+* la gestion des courses ;
+* la création et la gestion des préparations ;
+* l'association de plusieurs préparations à une course ;
+* la gestion des différentes étapes d'une préparation ;
+* la création et la gestion des entraînements ;
+* la validation des données reçues par l'API ;
+* la communication avec l'application Flutter via des endpoints REST.
 
-* Flutter
-* Dart
-* API REST personnalisée
-* Architecture client / serveur
+## Stack technique
+
+### Backend
+
+* Node.js
+* NestJS
+* TypeScript
+
+### Base de données
+
+* MongoDB
+* Mongoose
+
+### Authentification
+
+* Passport
+* JWT
+* bcrypt
+
+### Validation
+
+* class-validator
+* class-transformer
+
+### Déploiement et environnement
+
+* Docker
+* Docker Compose
 
 ## Architecture
 
-L'application Flutter constitue la partie cliente du projet.
-
-Elle communique avec une API REST séparée chargée de gérer les données et la logique serveur.
+Le projet repose sur une architecture client / serveur.
 
 ```text
-Application Flutter
+Application
         |
         | HTTP / REST
         v
-     API REST
+ TrainingProgramApi
+     NestJS
         |
+        | Mongoose
         v
- Base de données
+     MongoDB
 ```
 
-## Objectif du projet
+## Modèle fonctionnel
 
-L'objectif est de proposer une application permettant de centraliser la préparation d'une course, depuis la recherche de l'objectif jusqu'à la planification et au suivi des différentes séances d'entraînement.
+### Utilisateur
 
-Le projet est également l'occasion de mettre en pratique le développement d'une application Flutter complète communiquant avec une API REST dédiée.
+Les utilisateurs disposent d'un compte leur permettant d'accéder aux fonctionnalités de l'application.
+
+L'authentification est gérée par l'API à l'aide de JWT.
+
+### Course
+
+Une course représente l'objectif que l'utilisateur souhaite préparer.
+
+Une course peut être associée à plusieurs préparations différentes.
+
+### Préparation
+
+Une préparation représente un programme d'entraînement complet associé à une course.
+
+Plusieurs préparations peuvent donc être proposées pour une même course afin de répondre à différents besoins.
+
+### Étape
+
+Une préparation est divisée en plusieurs étapes afin de structurer la progression du programme.
+
+### Entraînement
+
+Les entraînements représentent les différentes séances à effectuer au cours de la préparation.
+
+Ils sont ensuite exploités par l'application Flutter pour afficher le programme et construire le planning mensuel de l'utilisateur.
+
+## Objectif
+
+TrainingProgramApi a été développée pour disposer d'un backend indépendant et structuré pour application mobile de préparation aux courses.
+
+Le projet couvre plusieurs problématiques classiques d'une application complète : conception d'une API REST, authentification, sécurisation des routes, modélisation et persistance des données, validation des entrées, communication avec une application mobile et conteneurisation.
